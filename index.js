@@ -161,9 +161,9 @@ const format_raw_signature = function(sig) {
   return data
 }
 
-// ======================
-// ethereumjs-util.ecsign
-// ======================
+// ====================
+// ethereumjs-util.sha3
+// ====================
 const sha3 = function (a, bits) {
   a = rlp.toBuffer(a)
   if (!bits) bits = 256
@@ -188,7 +188,7 @@ const sign = function(data, privateKey) {
 const verify = function(msgHash, signature, publicKey) {
   publicKey  = rlp.toBuffer('0x' + rlp.stripHexPrefix(publicKey))
 
-  // signature may also contain DER
+  // skip this step if signature is DER encoded
   if (Buffer.isBuffer(signature) && (signature.length === 64)) {
     let sigObj = {r: signature.slice(0, 32), s: signature.slice(32, 64)}
 
