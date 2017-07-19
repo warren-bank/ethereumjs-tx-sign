@@ -47,24 +47,9 @@ const txData = {
 
 // ----------------------------------------------------------------------
 
-const rlp = require('../../../lib/rlp')  // {encode, isHexPrefixed, stripHexPrefix, stripZeros, intToHex, padToEven, intToBuffer, toBuffer, bufferToHex, bufferToInt}
-const createKeccakHash = require('keccak')
-const BN = require('bn.js')
-
-const web3 = {}
-web3.sha3 = function (a, bits) {
-  a = rlp.toBuffer(a)
-  if (!bits) bits = 256
-
-  return '0x' + createKeccakHash('keccak' + bits).update(a).digest('hex')
-}
-web3.BigNumber = BN
-
-// ----------------------------------------------------------------------
-
 const {sign, verify} = require('../../../index')
 
-const {rawData: this_rawData, msgHash: this_msgHash, DER: this_DER, signature: this_signature, rawTx: this_rawTx} = sign(txData, privateKey, web3)
+const {rawData: this_rawData, msgHash: this_msgHash, DER: this_DER, signature: this_signature, rawTx: this_rawTx} = sign(txData, privateKey)
 
 console.log('this library:')
 console.log('   ', 'chainId               =', '[unavailable]')
@@ -73,7 +58,7 @@ console.log('   ', 'msgHash               =', this_msgHash.toString('hex'))
 console.log('   ', 'signature             =', this_signature.toString('hex'))
 console.log('   ', 'DER encoded signature =', JSON.stringify(this_DER))
 console.log('   ', 'signed rawTx          =', clean_input(this_rawTx))
-console.log('   ', 'signature verified    =', verify(this_msgHash, this_signature, publicKey, web3), "\n")
+console.log('   ', 'signature verified    =', verify(this_msgHash, this_signature, publicKey), "\n")
 
 // ----------------------------------------------------------------------
 
@@ -95,6 +80,6 @@ console.log('   ', 'msgHash               =', that_msgHash.toString('hex'))
 console.log('   ', 'signature             =', that_signature.toString('hex'))
 console.log('   ', 'DER encoded signature =', '[unavailable]')
 console.log('   ', 'signed rawTx          =', that_rawTx)
-console.log('   ', 'signature verified    =', verify(that_msgHash, that_signature, publicKey, web3), "\n")
+console.log('   ', 'signature verified    =', verify(that_msgHash, that_signature, publicKey), "\n")
 
 // ----------------------------------------------------------------------

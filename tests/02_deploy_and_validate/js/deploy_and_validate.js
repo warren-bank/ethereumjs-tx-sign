@@ -56,7 +56,7 @@ const txData = {
   nonce:    clean_input(from_nonce),
   gasPrice: clean_input(30000000000),
   gasLimit: clean_input('0x100000'),
-  to:       clean_input('0x0000000000000000000000000000000000000000'),
+//to:       clean_input('0x0000000000000000000000000000000000000000'),
   value:    clean_input(0),
   data:     clean_input(contract_data)
 }
@@ -65,14 +65,14 @@ const txData = {
 
 const {sign, verify} = require('../../../index')
 
-const {rawData, msgHash, DER, signature, rawTx} = sign(txData, privateKey, web3)
+const {rawData, msgHash, DER, signature, rawTx} = sign(txData, privateKey)
 
 console.log('rawData               =', JSON.stringify(rawData))
 console.log('msgHash               =', msgHash.toString('hex'))
 console.log('signature             =', signature.toString('hex'))
 console.log('DER encoded signature =', JSON.stringify(DER))
 console.log('signed rawTx          =', clean_input(rawTx))
-console.log('signature verified    =', verify(msgHash, signature, publicKey, web3), "\n")
+console.log('signature verified    =', verify(msgHash, signature, publicKey), "\n")
 
 // ----------------------------------------------------------------------
 

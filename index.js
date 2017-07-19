@@ -4,7 +4,11 @@ const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 const ecparams = ec.curve
 
+const BN = require('bn.js')
+
 const rlp = require('./lib/rlp')  // {encode, isHexPrefixed, stripHexPrefix, stripZeros, intToHex, padToEven, intToBuffer, toBuffer, bufferToHex, bufferToInt}
+
+const createKeccakHash = require('./lib/keccak')
 
 const assert = require('assert')
 
@@ -106,9 +110,9 @@ const get_field_value = function(field, value) {
 // ==================
 // ethereumjs-tx.sign
 // ==================
-const get_signature = function(rawData, privateKey, web3) {
-  let msgHash    = get_hash(rawData, web3)
-  let {DER, sig} = get_raw_signature(msgHash, privateKey, web3)
+const get_signature = function(rawData, privateKey) {
+  let msgHash    = get_hash(rawData)
+  let {DER, sig} = get_raw_signature(msgHash, privateKey)
   let rawSigData = format_raw_signature(sig)
   rawSigData     = process_data(rawSigData, false)
   rawSigData.forEach((value, index) => {
@@ -121,17 +125,17 @@ const get_signature = function(rawData, privateKey, web3) {
 // ==================
 // ethereumjs-tx.hash
 // ==================
-const get_hash = function(rawData, web3) {
+const get_hash = function(rawData) {
   let items   = rawData.slice(0, 6)  // "nonce","gasPrice","gasLimit","to","value","data"
-  let msgHash = web3.sha3(rlp.encode(items))
+  let msgHash = sha3(rlp.encode(items))
   return rlp.stripHexPrefix(msgHash)
 }
 
 // ===================
 // secp256k1-node.sign
 // ===================
-const get_raw_signature = function(msgHash, privateKey, web3) {
-  let d = new web3.BigNumber(rlp.bufferToHex(privateKey, false), 16)
+const get_raw_signature = function(msgHash, privateKey) {
+  let d = new BN(rlp.bufferToHex(privateKey, false), 16)
   if (d.cmp(ecparams.n) >= 0 || d.isZero()) throw new Error("nonce generation function failed or private key is invalid")
 
   let signed_msgHash = ec.sign(msgHash, privateKey, { canonical: true })
@@ -157,13 +161,23 @@ const format_raw_signature = function(sig) {
   return data
 }
 
+// ======================
+// ethereumjs-util.ecsign
+// ======================
+const sha3 = function (a, bits) {
+  a = rlp.toBuffer(a)
+  if (!bits) bits = 256
+
+  return createKeccakHash('keccak' + bits).update(a).digest('hex')
+}
+
 // ===
 // API
 // ===
-const sign = function(data, privateKey, web3) {
+const sign = function(data, privateKey) {
   privateKey                    = rlp.toBuffer('0x' + rlp.stripHexPrefix(privateKey))
   let rawData                   = process_data(data)
-  let {msgHash, DER, signature} = get_signature(rawData, privateKey, web3)
+  let {msgHash, DER, signature} = get_signature(rawData, privateKey)
   let rawTx                     = rlp.encode(rawData).toString('hex')
   return {rawData, msgHash, DER, signature, rawTx}
 }
@@ -171,15 +185,15 @@ const sign = function(data, privateKey, web3) {
 // =====================
 // secp256k1-node.verify
 // =====================
-const verify = function(msgHash, signature, publicKey, web3) {
+const verify = function(msgHash, signature, publicKey) {
   publicKey  = rlp.toBuffer('0x' + rlp.stripHexPrefix(publicKey))
 
   // signature may also contain DER
   if (Buffer.isBuffer(signature) && (signature.length === 64)) {
     let sigObj = {r: signature.slice(0, 32), s: signature.slice(32, 64)}
 
-    let sigr = new web3.BigNumber(sigObj.r.toString('hex'), 16)
-    let sigs = new web3.BigNumber(sigObj.s.toString('hex'), 16)
+    let sigr = new BN(sigObj.r.toString('hex'), 16)
+    let sigs = new BN(sigObj.s.toString('hex'), 16)
     if (sigr.cmp(ecparams.n) >= 0 || sigs.cmp(ecparams.n) >= 0) throw new Error("couldn't parse signature")
     if (sigs.cmp(ec.nh) === 1 || sigr.isZero() || sigs.isZero()) return false
 

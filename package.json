@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "bn.js": "^4.11.7",
     "elliptic": "^6.4.0"
   },
   "license": "GPL-2.0",
