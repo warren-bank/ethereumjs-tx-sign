@@ -20,12 +20,13 @@
   "bugs": {
     "url": "https://github.com/warren-bank/ethereumjs-tx-sign/issues"
   },
-  "description": "minimal library to sign raw ethereum transaction objects",
+  "description": "minimal library to sign (and verify) raw Ethereum transactions",
   "keywords": [
     "web3.js",
     "web3",
-    "sendRawTransaction",
     "ethereum",
+    "ethereumjs-tx",
+    "sendRawTransaction",
     "solidity",
     "solc",
     "geth",
