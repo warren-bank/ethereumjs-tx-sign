@@ -8,7 +8,7 @@ const BN = require('bn.js')
 
 const rlp = require('./lib/rlp')  // {encode, isHexPrefixed, stripHexPrefix, stripZeros, intToHex, padToEven, intToBuffer, toBuffer, bufferToHex, bufferToInt}
 
-const createKeccakHash = require('./lib/keccak')
+const {sha3} = require('./lib/keccak')
 
 const assert = require('assert')
 
@@ -159,16 +159,6 @@ const format_raw_signature = function(sig) {
   data.r = sig.signature.slice(0, 32)
   data.s = sig.signature.slice(32, 64)
   return data
-}
-
-// ====================
-// ethereumjs-util.sha3
-// ====================
-const sha3 = function (a, bits) {
-  a = rlp.toBuffer(a)
-  if (!bits) bits = 256
-
-  return createKeccakHash('keccak' + bits).update(a).digest('hex')
 }
 
 // ===
