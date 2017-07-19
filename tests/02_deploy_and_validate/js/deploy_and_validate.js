@@ -2,9 +2,9 @@
 
 // ----------------------------------------------------------------------
 
-const from_address = 'bb10887584b6b74c50ee6c9cc63f3063e9cef793'
-const privateKey   = 'cc30c22d832c308b23b3885b79501a704f372950f3cd596f8c9150500405badf'
-const publicKey    = '045b72b37490dbce7e6473c9fd2ff4493aa8f22012a5432810ef1c20f47fe7c98fec87c4c6ef7b63e20aac524fa500535d08e025d549b00d64c89c55f7c2c505ad'
+const privateKey   = 'e922354a3e5902b5ac474f3ff08a79cff43533826b8f451ae2190b65a9d26158'
+const publicKey    = '0493ff3bd23838a02f24adcb23aa90bf2de8becbd1abe688e0f6a3202bee2cc4c2ecf7cd2608cda0817d6223f81bed074f166b8b55de54d603817699b4c70feaac'
+const from_address = 'f95abdf6ede4c3703e0e9453771fbee8592d31e9'
 
 // ----------------------------------------------------------------------
 
@@ -52,7 +52,7 @@ const clean_input = function(str) {
 
 const from_nonce = web3.eth.getTransactionCount(clean_input(from_address))
 
-const rawTx = {
+const txData = {
   nonce:    clean_input(from_nonce),
   gasPrice: clean_input(30000000000),
   gasLimit: clean_input('0x100000'),
@@ -65,16 +65,18 @@ const rawTx = {
 
 const {sign, verify} = require('../../../index')
 
-let {msgHash, signature, signed_serialized_rawTx} = sign(rawTx, privateKey, web3)
+const {rawData, msgHash, DER, signature, rawTx} = sign(txData, privateKey, web3)
 
-signed_serialized_rawTx = clean_input(signed_serialized_rawTx)
-console.log('raw_tx:', signed_serialized_rawTx, "\n")
-
-console.log('signature verified: ', verify(msgHash, signature, publicKey, web3), "\n")
+console.log('rawData               =', JSON.stringify(rawData))
+console.log('msgHash               =', msgHash.toString('hex'))
+console.log('signature             =', signature.toString('hex'))
+console.log('DER encoded signature =', JSON.stringify(DER))
+console.log('signed rawTx          =', clean_input(rawTx))
+console.log('signature verified    =', verify(msgHash, signature, publicKey, web3), "\n")
 
 // ----------------------------------------------------------------------
 
-web3.eth.sendRawTransaction(signed_serialized_rawTx, function(err, hash) {
+web3.eth.sendRawTransaction(rawTx, function(err, hash) {
   if (err) console.log('error:', err.message)
   if ((!err) && hash) {
     console.log('tx_hash:', hash, "\n")

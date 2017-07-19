@@ -4,31 +4,138 @@ const EC = require('elliptic').ec
 const ec = new EC('secp256k1')
 const ecparams = ec.curve
 
-const rlp = require('./lib/rlp')  // {encode, isHexPrefixed, stripHexPrefix, intToHex, padToEven, intToBuffer, toBuffer}
+const rlp = require('./lib/rlp')  // {encode, isHexPrefixed, stripHexPrefix, stripZeros, intToHex, padToEven, intToBuffer, toBuffer, bufferToHex, bufferToInt}
+
+const assert = require('assert')
 
 // ----------------------------------------------------------------------
 
-const fields = ["nonce","gasPrice","gasLimit","to","value","data","v","r","s"]
+// =========================
+// ethereumjs-tx.constructor
+// =========================
+const fields = [{
+  name: 'nonce',
+  length: 32,
+  allowLess: true,
+  default: new Buffer([])
+}, {
+  name: 'gasPrice',
+  length: 32,
+  allowLess: true,
+  default: new Buffer([])
+}, {
+  name: 'gasLimit',
+  alias: 'gas',
+  length: 32,
+  allowLess: true,
+  default: new Buffer([])
+}, {
+  name: 'to',
+  allowZero: true,
+  length: 20,
+  default: new Buffer([])
+}, {
+  name: 'value',
+  length: 32,
+  allowLess: true,
+  default: new Buffer([])
+}, {
+  name: 'data',
+  alias: 'input',
+  allowZero: true,
+  default: new Buffer([])
+}, {
+  name: 'v',
+  allowZero: true,
+  default: new Buffer([0x1c])
+}, {
+  name: 'r',
+  length: 32,
+  allowZero: true,
+  allowLess: true,
+  default: new Buffer([])
+}, {
+  name: 's',
+  length: 32,
+  allowZero: true,
+  allowLess: true,
+  default: new Buffer([])
+}]
 
-// ======================
-// ethereumjs-util.ecsign
-// ======================
-const format_signature = function(sig) {
-  let data = {}
-  data.v = sig.recovery + 27
-  data.r = sig.signature.slice(0, 32)
-  data.s = sig.signature.slice(32, 64)
-  return data
+// ================================
+// ethereumjs-util.defineProperties
+// ================================
+const process_data = function(data, use_defaults=true) {
+  let raw = []
+  let keys = Object.keys(data)
+
+  fields.forEach(function (field, index) {
+    let value
+    if      (keys.indexOf(field.name)  !== -1)               value = get_field_value(field, data[field.name])
+    else if (keys.indexOf(field.alias) !== -1)               value = get_field_value(field, data[field.alias])
+    else if (use_defaults && (field.default !== undefined))  value = field.default
+    if (value !== undefined) raw[index] = value
+  })
+
+  return raw
+}
+
+const get_field_value = function(field, value) {
+  let v      = rlp.toBuffer(value)
+  let isZero = (v.toString('hex').match(/^0+$/) !== null)
+
+  // modify value
+  if (isZero) {
+    if (!field.allowZero)     v = Buffer.allocUnsafe(0)
+    else if (field.allowLess) v = Buffer.alloc(1, 0)
+    else if (field.length)    v = Buffer.alloc(field.length, 0)
+  }
+  else {
+    if (field.allowLess)      v = rlp.stripZeros(v)
+  }
+
+  // validate value
+  if (field.length) {
+    if (field.allowLess)      assert(field.length  >= v.length, 'The field ' + field.name + ' must not have more ' + field.length + ' bytes')
+    else                      assert(field.length === v.length, 'The field ' + field.name + ' must have byte length of ' + field.length)
+  }
+
+  return v
+}
+
+// ==================
+// ethereumjs-tx.sign
+// ==================
+const get_signature = function(rawData, privateKey, web3) {
+  let msgHash    = get_hash(rawData, web3)
+  let {DER, sig} = get_raw_signature(msgHash, privateKey, web3)
+  let rawSigData = format_raw_signature(sig)
+  rawSigData     = process_data(rawSigData, false)
+  rawSigData.forEach((value, index) => {
+    if (value !== undefined) rawData[index] = value
+  })
+
+  return {msgHash, DER, signature: sig.signature}
+}
+
+// ==================
+// ethereumjs-tx.hash
+// ==================
+const get_hash = function(rawData, web3) {
+  let items   = rawData.slice(0, 6)  // "nonce","gasPrice","gasLimit","to","value","data"
+  let msgHash = web3.sha3(rlp.encode(items))
+  return rlp.stripHexPrefix(msgHash)
 }
 
 // ===================
 // secp256k1-node.sign
 // ===================
-const get_signature = function(msgHash, privateKey, web3) {
-  let d = web3.toBigNumber(privateKey)
+const get_raw_signature = function(msgHash, privateKey, web3) {
+  let d = new web3.BigNumber(rlp.bufferToHex(privateKey, false), 16)
   if (d.cmp(ecparams.n) >= 0 || d.isZero()) throw new Error("nonce generation function failed or private key is invalid")
 
-  let signed_msgHash = ec.sign(msgHash, privateKey, 16, { canonical: true })
+  let signed_msgHash = ec.sign(msgHash, privateKey, { canonical: true })
+  let DER = signed_msgHash.toDER()
   let sig = {
     signature: Buffer.concat([
       signed_msgHash.r.toArrayLike(Buffer, 'be', 32),
@@ -36,68 +143,50 @@ const get_signature = function(msgHash, privateKey, web3) {
     ]),
     recovery: signed_msgHash.recoveryParam
   }
-  return sig
+  return {DER, sig}
 }
 
-// ==================
-// ethereumjs-tx.hash
-// ==================
-const get_hash = function(raw, web3) {
-  let items = raw.slice(0, 6)  // "nonce","gasPrice","gasLimit","to","value","data"
-  let msgHash = web3.sha3(rlp.encode(items))
-  return msgHash
-}
-
-// ==================
-// ethereumjs-tx.sign
-// ==================
-const get_formatted_signature = function(raw, privateKey, web3) {
-  let msgHash = get_hash(raw, web3)
-  let sig = get_signature(msgHash, privateKey, web3)
-  let signature_data = format_signature(sig)
-  return {msgHash, signature: sig.signature, signature_data}
+// ======================
+// ethereumjs-util.ecsign
+// ======================
+const format_raw_signature = function(sig) {
+  let data = {}
+  data.v = sig.recovery + 27
+  data.r = sig.signature.slice(0, 32)
+  data.s = sig.signature.slice(32, 64)
+  return data
 }
 
 // ===
 // API
 // ===
 const sign = function(data, privateKey, web3) {
-  privateKey = `0x${ rlp.stripHexPrefix(privateKey) }`
-  let msgHash, signature, signature_data
-  let raw = []
-
-  fields.forEach((key, index) => {
-    if (data[key] === undefined) {
-      let default_value = (key === 'v') ? new Buffer([0x1c]) : new Buffer([])
-      raw[index] = default_value
-    }
-    else {
-      raw[index] = rlp.toBuffer(data[key])
-    }
-
-    if (key === 'data') {
-      ({msgHash, signature, signature_data} = get_formatted_signature(raw, privateKey, web3))
-      data = signature_data
-    }
-  })
-
-  let signed_serialized_rawTx = rlp.encode(raw).toString('hex')
-  return {msgHash, signature, signed_serialized_rawTx}
+  privateKey                    = rlp.toBuffer('0x' + rlp.stripHexPrefix(privateKey))
+  let rawData                   = process_data(data)
+  let {msgHash, DER, signature} = get_signature(rawData, privateKey, web3)
+  let rawTx                     = rlp.encode(rawData).toString('hex')
+  return {rawData, msgHash, DER, signature, rawTx}
 }
 
 // =====================
 // secp256k1-node.verify
 // =====================
 const verify = function(msgHash, signature, publicKey, web3) {
-  publicKey  = rlp.stripHexPrefix(publicKey)
-  let sigObj = {r: signature.slice(0, 32), s: signature.slice(32, 64)}
+  publicKey  = rlp.toBuffer('0x' + rlp.stripHexPrefix(publicKey))
 
-  let sigr = web3.toBigNumber('0x' + sigObj.r.toString('hex'))
-  var sigs = web3.toBigNumber('0x' + sigObj.s.toString('hex'))
-  if (sigr.cmp(ecparams.n) >= 0 || sigs.cmp(ecparams.n) >= 0) throw new Error("couldn't parse signature")
-  if (sigs.cmp(ec.nh) === 1 || sigr.isZero() || sigs.isZero()) return false
+  // signature may also contain DER
+  if (Buffer.isBuffer(signature) && (signature.length === 64)) {
+    let sigObj = {r: signature.slice(0, 32), s: signature.slice(32, 64)}
 
-  return ec.verify(msgHash, sigObj, publicKey, 'hex')
+    let sigr = new web3.BigNumber(sigObj.r.toString('hex'), 16)
+    let sigs = new web3.BigNumber(sigObj.s.toString('hex'), 16)
+    if (sigr.cmp(ecparams.n) >= 0 || sigs.cmp(ecparams.n) >= 0) throw new Error("couldn't parse signature")
+    if (sigs.cmp(ec.nh) === 1 || sigr.isZero() || sigs.isZero()) return false
+
+    signature = sigObj
+  }
+
+  return ec.verify(msgHash, signature, publicKey)
 }
 
 module.exports = {sign, verify}
