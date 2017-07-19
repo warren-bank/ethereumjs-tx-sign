@@ -1,0 +1,38 @@
+{
+  "name": "@warren-bank/ethereumjs-tx-sign",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "elliptic": "^6.4.0"
+  },
+  "license": "GPL-2.0",
+  "author": {
+    "name": "Warren R. Bank",
+    "email": "warren.r.bank@gmail.com",
+    "url": "https://github.com/warren-bank"
+  },
+  "homepage": "https://github.com/warren-bank/ethereumjs-tx-sign",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/warren-bank/ethereumjs-tx-sign"
+  },
+  "bugs": {
+    "url": "https://github.com/warren-bank/ethereumjs-tx-sign/issues"
+  },
+  "description": "minimal library to sign raw ethereum transaction objects",
+  "keywords": [
+    "web3.js",
+    "web3",
+    "sendRawTransaction",
+    "ethereum",
+    "solidity",
+    "solc",
+    "geth",
+    "testrpc",
+    "dapp",
+    "dapple",
+    "dapphub",
+    "truffle",
+    "trufflesuite"
+  ]
+}

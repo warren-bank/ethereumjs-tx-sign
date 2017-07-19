@@ -1,0 +1,8 @@
+{
+  "name": "02_deploy_and_validate",
+  "version": "1.0.0",
+  "main": "",
+  "dependencies": {
+    "web3": "^0.20.1"
+  }
+}

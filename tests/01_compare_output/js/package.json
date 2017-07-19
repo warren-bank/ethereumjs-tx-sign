@@ -1,0 +1,8 @@
+{
+  "name": "01_compare_output",
+  "version": "1.0.0",
+  "main": "",
+  "dependencies": {
+    "ethereumjs-tx": "^1.3.3"
+  }
+}

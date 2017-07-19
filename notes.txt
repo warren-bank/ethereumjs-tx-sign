@@ -1,0 +1,198 @@
+// ----------------------------------------------------------------------
+
+https://github.com/ethereumjs/ethereumjs-tx
+https://github.com/ethereumjs/ethereumjs-tx/blob/master/index.js
+
+https://github.com/ethereumjs/ethereumjs-util
+https://github.com/ethereumjs/ethereumjs-util/blob/master/index.js
+
+https://github.com/cryptocoinjs/secp256k1-node
+https://github.com/cryptocoinjs/secp256k1-node/blob/master/lib/index.js
+https://github.com/cryptocoinjs/secp256k1-node/blob/master/lib/elliptic/index.js
+
+https://github.com/ethereumjs/rlp
+https://github.com/ethereumjs/rlp/blob/master/index.js
+
+https://github.com/indutny/elliptic
+https://github.com/indutny/elliptic/tree/master/lib/elliptic/ec
+
+// ----------------------------------------------------------------------
+// ethereumjs-tx
+
+const ethUtil = require('ethereumjs-util')
+
+constructor (data) {
+    const fields = [...]  // "nonce","gasPrice","gasLimit","to","value","data","v","r","s"
+    ethUtil.defineProperties(this, fields, data)
+
+    Object.defineProperty(this, 'from', {
+      enumerable: true,
+      configurable: true,
+      get: this.getSenderAddress.bind(this)  // uses "elliptic.ec('secp256k1').ecrecover()" to calculate the publicKey (from: "r","s") and convert it to an Ethereum address
+    })
+}
+
+sign (privateKey) {
+    const msgHash = this.hash(false)
+    const sig = ethUtil.ecsign(msgHash, privateKey)
+    if (this._chainId > 0) {
+        sig.v += this._chainId * 2 + 8
+    }
+    Object.assign(this, sig)  // update: "v","r","s"
+}
+
+hash (includeSignature) {
+    let items
+    if (this._chainId > 0) {
+        const raw = this.raw.slice()
+        this.v = this._chainId
+        this.r = 0
+        this.s = 0
+        items = this.raw
+        this.raw = raw
+    } else {
+        items = this.raw.slice(0, 6)  // "nonce","gasPrice","gasLimit","to","value","data"
+    }
+
+    return ethUtil.rlphash(items)
+}
+
+// notes:
+//   * need to obtain:
+//     - this._chainId
+//     - this.raw
+
+// questions:
+//   * how is "this.from" used??
+//   * it isn't included in: "this.raw",
+//     which means that its value isn't included in the output of: "this.serialize()"
+
+// ----------------------------------------------------------------------
+// ethereumjs-tx => this._chainId
+
+this.v = data.v || new Buffer([0x1c])
+let sigV = ethUtil.bufferToInt(this.v)
+let chainId = Math.floor((sigV - 35) / 2)
+if (chainId < 0) chainId = 0
+this._chainId = chainId || data.chainId || 0
+
+// notes:
+//   * `data.chainId` is an integer that specifies which blockchain the transaction is intended to be added to
+//     ex: mainnet = 1, ropsten = 3, etc
+//   * using default values:
+//         v = new Buffer([0x1c])
+//         v = require('ethereumjs-util').bufferToInt(v)  // 28 === 0x1c
+//         chainId = Math.floor((v - 35) / 2)             // -4
+//         chainId = 0
+//   * the only way `chainId > 0` would be when either:
+//     -  `data.v >= 39`
+//     -  `data.chainId` is defined
+//   * for the purpose of this library,
+//     I'm going to assume that: `this._chainId === 0`
+
+// ----------------------------------------------------------------------
+// ethereumjs-util
+
+const secp256k1 = require('secp256k1')
+const rlp = require('rlp')
+const createKeccakHash = require('keccak')
+
+exports.ecsign = function (msgHash, privateKey) {
+  var sig = secp256k1.sign(msgHash, privateKey)
+
+  var ret = {}
+  ret.r = sig.signature.slice(0, 32)
+  ret.s = sig.signature.slice(32, 64)
+  ret.v = sig.recovery + 27
+  return ret
+}
+
+exports.rlphash = function (a) {
+  return exports.sha3(rlp.encode(a))
+}
+
+exports.sha3 = function (a, bits) {
+  a = exports.toBuffer(a)
+  if (!bits) bits = 256
+
+  return createKeccakHash('keccak' + bits).update(a).digest()
+}
+
+// notes:
+//   * "exports.sha3(val)" should do the same thing as: "web3.sha3(val)"
+//   * "createKeccakHash" is not needed
+// see:
+//   * https://github.com/ethereum/wiki/wiki/JavaScript-API#web3sha3
+//     https://github.com/ethereum/web3.js/blob/develop/lib/utils/sha3.js
+//       => var sha3 = require('crypto-js/sha3')
+//   * 
+
+// ----------------------------------------------------------------------
+// ethereumjs-util
+
+exports.defineProperties = function (self, fields, data) {
+  self.raw = []
+  self._fields = []
+
+  self.serialize = function serialize () {
+    return rlp.encode(self.raw)  // "nonce","gasPrice","gasLimit","to","value","data","v","r","s"
+  }
+
+  fields.forEach(function (field, i) {
+    self._fields.push(field.name)
+    function getter () {
+      return self.raw[i]
+    }
+    function setter (v) {
+      v = exports.toBuffer(v)
+      self.raw[i] = v
+    }
+    Object.defineProperty(self, field.name, {
+      enumerable: true,
+      configurable: true,
+      get: getter,
+      set: setter
+    })
+  })
+}
+
+// ----------------------------------------------------------------------
+// secp256k1
+
+var EC = require('elliptic').ec
+var ec = new EC('secp256k1')
+var ecparams = ec.curve
+
+exports.sign = function (message, privateKey, noncefn, data) {
+  // validate: privateKey
+  var d = new BigNumber(privateKey)
+  if (d.cmp(ecparams.n) >= 0 || d.isZero()) throw new Error(messages.ECDSA_SIGN_FAIL)
+
+  var result = ec.sign(message, privateKey, { canonical: true, k: noncefn, pers: data })
+  return {
+    signature: Buffer.concat([
+      result.r.toArrayLike(Buffer, 'be', 32),
+      result.s.toArrayLike(Buffer, 'be', 32)
+    ]),
+    recovery: result.recoveryParam
+  }
+}
+
+// ----------------------------------------------------------------------
+// rlp
+
+notes:
+======
+  * this is a tiny library with no external "--production" dependencies,
+    but there are several devDependencies.. and no ".npmignore" to filter tests
+
+// ----------------------------------------------------------------------
+
+notes:
+======
+  * "ethereumjs-tx.sign()"
+    => "ethereumjs-util.ecsign()"
+      => "secp256k1.sign()"
+        => "elliptic.ec('secp256k1').sign()"
+
+// ----------------------------------------------------------------------
