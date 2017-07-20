@@ -2,7 +2,7 @@
 
 #### Description:
 
-The goal of this repo is to provide a stripped down version of `ethereumjs-tx` that can still be used to sign raw transactions.
+The goal of this project is to provide a light-weight minimal library to sign (and verify) raw Ethereum transactions.
 
 #### Installation:
 
@@ -14,9 +14,13 @@ npm install --save '@warren-bank/ethereumjs-tx-sign'
 
 [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx) is the de-facto library used to sign raw transactions.
 
-`npm install --production 'ethereumjs-tx'` results in a `node_modules` directory that is `10.4 MB` (`24.9 MB on disk using ext4`).
+Clean installation of the `ethereumjs-tx` module results in a `node_modules` directory that is:
+* `10.4 MB`
+* `24.9 MB` on disk (_ext4_)
 
-Installation of this npm module results in a `node_modules` directory that is `302.3 KB` (`580.0 KB on disk using ext4`).
+Clean installation of this module results in a `node_modules` directory that is:
+* `302.3 KB`
+* `580.0 KB` on disk (_ext4_)
 
 #### Usage Example:
 
@@ -77,3 +81,9 @@ web3.eth.sendRawTransaction(rawTx, function(err, hash) {
 * [secp256k1-node](https://github.com/cryptocoinjs/secp256k1-node)
 * [rlp](https://github.com/ethereumjs/rlp)
 * [keccak](https://github.com/cryptocoinjs/keccak)
+
+#### Special Thanks:
+
+* [elliptic](https://github.com/indutny/elliptic)
+  * is a dependency of this module
+  * it's the work-horse that makes all of this possible
