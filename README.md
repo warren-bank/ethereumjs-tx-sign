@@ -109,9 +109,9 @@ __verify(msgHash, signature, publicKey)__
   * signature
     * type:
       * Buffer: length of 64 Bytes
-      * Object: `{s, r}`
-        * s: Buffer w/ length of 32 Bytes
+      * Object: `{r, s}`
         * r: Buffer w/ length of 32 Bytes
+        * s: Buffer w/ length of 32 Bytes
       * (DER encoded) Array of Number
       * (DER encoded) String: hex-encoded (without '0x' prefix):<br>
         `let DER_string = require('elliptic').utils.encode(DER, 'hex')`
@@ -147,19 +147,15 @@ __More Complete Example:__
 
 - - - -
 
-__{txData, signature, msgHash, publicKey, address} = unsign(rawTx, to_hex, add_prefix)__
+__{txData, signature, msgHash, publicKey, address} = unsign(rawTx, add_prefix)__
 
 * params:
   * rawTx
     * type:
       * String: hex-encoded (with or without '0x' prefix)
       * Buffer
-  * to_hex
-    * description: convert values in `txData` from Buffer to hex-encoded String?
-    * type: Boolean
-    * default: true
   * add_prefix
-    * description: if `to_hex`, prepend '0x' prefix to hex-encoded String values?
+    * description: prepend '0x' prefix to hex-encoded String values?
     * type: Boolean
     * default: true
 * returns:
@@ -167,14 +163,12 @@ __{txData, signature, msgHash, publicKey, address} = unsign(rawTx, to_hex, add_p
     * type: Object
     * keys: `"nonce","gasPrice","gasLimit","to","value","data"`
     * values:
-      * type:
-        * if `to_hex`: hex-encoded String
-          * if `add_prefix`: with '0x' prefix
-          * else: without prefix
-        * else: Buffer
+      * type: String
+      * format: hex-encoded
+        * if `add_prefix`: with '0x' prefix
   * signature
     * type: Object
-    * keys: `"s","r"`
+    * keys: `"r","s"`
     * values:
       * type:
         * if `to_hex`: hex-encoded String (without prefix)

@@ -19,7 +19,7 @@ const rawTx           = '0xf90339018506fc23ac00831000009400000000000000000000000
 
 const {unsign} = require('../../../index')
 
-const {txData, publicKey: output_publicKey, address: output_address} = unsign(rawTx, true, true)
+const {txData, publicKey: output_publicKey, address: output_address} = unsign(rawTx, true)
 
 console.log('txData:',         txData,           "\n")
 console.log('publicKey:',      output_publicKey, "\n")

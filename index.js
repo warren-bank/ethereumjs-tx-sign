@@ -207,8 +207,8 @@ const verify = function(msgHash, signature, publicKey) {
   return ec.verify(msgHash, signature, publicKey)
 }
 
-const unsign = function(rawTx, to_hex=true, add_prefix=true) {
-  let {txData, signature} = unsignRawTx(rawTx, to_hex, add_prefix, true, false)
+const unsign = function(rawTx, add_prefix=true) {
+  let {txData, signature} = unsignRawTx(rawTx, true, add_prefix, true, false)
 
   let rawData = process_data(txData)
   let msgHash = get_hash(rawData)
