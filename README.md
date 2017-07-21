@@ -10,6 +10,8 @@ The goal of this project is to provide a light-weight minimal library to sign (a
 npm install --save '@warren-bank/ethereumjs-tx-sign'
 ```
 
+- - - -
+
 #### Background:
 
 [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx) is the de-facto library used to sign raw transactions.
@@ -21,6 +23,8 @@ Clean installation of the `ethereumjs-tx` module results in a `node_modules` dir
 Clean installation of this module results in a `node_modules` directory that is:
 * `333.5 KB`
 * `640.0 KB` on disk (_ext4_)
+
+- - - -
 
 #### API:
 
@@ -94,6 +98,8 @@ __More Complete Example:__
 * [script](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/01_compare_output/js/compare_output.js)
 * [output](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/01_compare_output/run.log)
 
+- - - -
+
 __verify(msgHash, signature, publicKey)__
 
 * params:
@@ -138,6 +144,8 @@ __More Complete Example:__
 
 * [script](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/02_deploy_and_validate/js/deploy_and_validate.js)
 * [output](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/02_deploy_and_validate/run.log)
+
+- - - -
 
 __{txData, signature, msgHash, publicKey, address} = unsign(rawTx, to_hex, add_prefix)__
 
@@ -208,6 +216,8 @@ __Related:__
   * it is a minimal library to retrieve `txData` and (optionally) `signature` from `rawTx`
   * it doesn't include any external dependencies and (consequently) lacks the ability to calculate `publicKey` and `address` from `signature`
 
+- - - -
+
 #### Credits (mostly) Belong To:
 
 * [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
@@ -216,8 +226,8 @@ __Related:__
 * [rlp](https://github.com/ethereumjs/rlp)
 * [keccak](https://github.com/cryptocoinjs/keccak)
 
-#### Special Thanks:
+#### Special Thanks To:
 
 * [elliptic](https://github.com/indutny/elliptic)
   * is a dependency of this module
-  * it's the work-horse that makes all of this possible
+  * is the work-horse that makes all of this possible
