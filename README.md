@@ -155,7 +155,7 @@ __{txData, signature, msgHash, publicKey, address} = unsign(rawTx, add_prefix)__
       * String: hex-encoded (with or without '0x' prefix)
       * Buffer
   * add_prefix
-    * description: prepend '0x' prefix to hex-encoded String values?
+    * description: prepend '0x' prefix to hex-encoded String values in `txData`?
     * type: Boolean
     * default: true
 * returns:
