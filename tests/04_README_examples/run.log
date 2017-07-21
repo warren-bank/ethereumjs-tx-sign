@@ -1,0 +1,29 @@
+{ sign: 
+   { keypairs: 
+      { privateKey: 'e922354a3e5902b5ac474f3ff08a79cff43533826b8f451ae2190b65a9d26158',
+        publicKey: '0493ff3bd23838a02f24adcb23aa90bf2de8becbd1abe688e0f6a3202bee2cc4c2ecf7cd2608cda0817d6223f81bed074f166b8b55de54d603817699b4c70feaac',
+        address: 'f95abdf6ede4c3703e0e9453771fbee8592d31e9' },
+     txData: 
+      { nonce: '0x00',
+        gasPrice: '0x6fc23ac00',
+        gasLimit: '0x2710',
+        value: '0x00',
+        data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057' },
+     rawTx: 'f874808506fc23ac008227108080a47f74657374320000000000000000000000000000000000000000000000000000006000571ba02856256a5fc934fdd73411cc80fc9a46d0363cd5b45ddc69a324a9e48d53de41a04d86d2940d9a055882fe3f4691904afb04eb2a90b9cd38b11802c9649b34d906',
+     msgHash: '8bf5ea5d9433635cc4455b98e9e29a071471d2981310110c421c905a212dd914',
+     signature: <Buffer 28 56 25 6a 5f c9 34 fd d7 34 11 cc 80 fc 9a 46 d0 36 3c d5 b4 5d dc 69 a3 24 a9 e4 8d 53 de 41 4d 86 d2 94 0d 9a 05 58 82 fe 3f 46 91 90 4a fb 04 eb ... >,
+     verify: 'pass' },
+  unsign: 
+   { keypairs: 
+      { publicKey: '0493ff3bd23838a02f24adcb23aa90bf2de8becbd1abe688e0f6a3202bee2cc4c2ecf7cd2608cda0817d6223f81bed074f166b8b55de54d603817699b4c70feaac',
+        address: 'f95abdf6ede4c3703e0e9453771fbee8592d31e9' },
+     txData: 
+      { gasPrice: '0x06fc23ac00',
+        gasLimit: '0x2710',
+        data: '0x7f7465737432000000000000000000000000000000000000000000000000000000600057' },
+     msgHash: '8bf5ea5d9433635cc4455b98e9e29a071471d2981310110c421c905a212dd914',
+     signature: 
+      { v: '1b',
+        r: '2856256a5fc934fdd73411cc80fc9a46d0363cd5b45ddc69a324a9e48d53de41',
+        s: '4d86d2940d9a055882fe3f4691904afb04eb2a90b9cd38b11802c9649b34d906' },
+     verify: { recovery_publicKey: 'pass', original_publicKey: 'pass' } } }
