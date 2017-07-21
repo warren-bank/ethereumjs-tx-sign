@@ -6,6 +6,8 @@ const ecparams = ec.curve
 
 const BN = require('bn.js')
 
+const unsignRawTx = require('@warren-bank/ethereumjs-tx-unsign')
+
 const rlp = require('./lib/rlp')  // {encode, isHexPrefixed, stripHexPrefix, stripZeros, intToHex, padToEven, intToBuffer, toBuffer, bufferToHex, bufferToInt}
 
 const {sha3} = require('./lib/keccak')
@@ -161,6 +163,18 @@ const format_raw_signature = function(sig) {
   return data
 }
 
+// ===============================
+// ethereumjs-util.publicToAddress
+// ===============================
+const publicToAddress = function(publicKey) {
+  let pubKey = rlp.toBuffer('0x' + rlp.stripHexPrefix(publicKey))
+  if (pubKey.length === 65) pubKey = pubKey.slice(1)
+  assert.strictEqual(pubKey.length, 64, `Length of public key is ${pubKey.length} bytes. Expected length is 64 bytes.`)
+
+  // address contains the lower 160bits of the hash => 20 bytes => 40 hex-encoded string characters
+  return sha3(pubKey).slice(-40)
+}
+
 // ===
 // API
 // ===
@@ -193,6 +207,25 @@ const verify = function(msgHash, signature, publicKey) {
   return ec.verify(msgHash, signature, publicKey)
 }
 
-module.exports = {sign, verify}
+const unsign = function(rawTx, to_hex=true, add_prefix=true) {
+  let {txData, signature} = unsignRawTx(rawTx, to_hex, add_prefix, true, false)
+
+  let rawData = process_data(txData)
+  let msgHash = get_hash(rawData)
+
+  let ec_msgHash = new BN(msgHash, 16)
+  let ec_signature = {
+    r: signature.r,
+    s: signature.s
+  }
+  let ec_recovery = parseInt(signature.v, 16) - 27
+
+  let publicKey = ec.recoverPubKey(ec_msgHash, ec_signature, ec_recovery).encode('hex')
+  let address = publicToAddress(publicKey)
+
+  return {txData, signature, msgHash, publicKey, address}
+}
+
+module.exports = {sign, verify, unsign}
 
 // ----------------------------------------------------------------------
