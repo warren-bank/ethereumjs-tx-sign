@@ -179,7 +179,7 @@ __{txData, signature, msgHash, publicKey, address} = unsign(rawTx, add_prefix)__
     * type: String
     * format: hex-encoded (without '0x' prefix)
   * address
-    * description: "from" address, seen by network as the sender of this signed transaction
+    * description: "from" address &hellip; seen by network as the sender of this signed transaction
     * type: String
     * format: hex-encoded (without '0x' prefix)
 
