@@ -127,7 +127,7 @@ __verify(msgHash, signature, publicKey)__
 __Example:__
 
 ```javascript
-// contintuation of the previous example:
+// continuation of the previous example:
 
 const {verify} = require('@warren-bank/ethereumjs-tx-sign')
 
@@ -193,7 +193,7 @@ __{txData, signature, msgHash, publicKey, address} = unsign(rawTx, to_hex, add_p
 __Example:__
 
 ```javascript
-// contintuation of the previous example:
+// continuation of the previous example:
 
 const {unsign} = require('@warren-bank/ethereumjs-tx-sign')
 
