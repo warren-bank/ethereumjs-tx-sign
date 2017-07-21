@@ -170,9 +170,8 @@ __{txData, signature, msgHash, publicKey, address} = unsign(rawTx, add_prefix)__
     * type: Object
     * keys: `"r","s"`
     * values:
-      * type:
-        * if `to_hex`: hex-encoded String (without prefix)
-        * else: Buffer w/ length of 32 Bytes
+      * type: String
+      * format: hex-encoded (without '0x' prefix)
   * msgHash
     * type: String
     * format: hex-encoded (without '0x' prefix)
