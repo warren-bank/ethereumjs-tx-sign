@@ -19,19 +19,50 @@ Clean installation of the `ethereumjs-tx` module results in a `node_modules` dir
 * `24.9 MB` on disk (_ext4_)
 
 Clean installation of this module results in a `node_modules` directory that is:
-* `302.3 KB`
-* `580.0 KB` on disk (_ext4_)
+* `333.5 KB`
+* `640.0 KB` on disk (_ext4_)
 
-#### Usage Example:
+#### API:
+
+__{rawData, msgHash, DER, signature, rawTx} = sign(txData, privateKey)__
+
+* params:
+  * txData
+    * type: Object
+    * keys can include: `"nonce","gasPrice","gasLimit","to","value","data"`
+    * values:
+      * type: String
+      * format: hex-encoded (with '0x' prefix)
+      * more generally: any value that can be converted to a Buffer: `rlp.toBuffer(value)`
+  * privateKey
+    * type: String
+    * format: hex-encoded (with or without '0x' prefix)
+* returns:
+  * rawData
+    * type: Array of Buffers
+    * length: 9
+    * values (and order) correspond to the data fields: `"nonce","gasPrice","gasLimit","to","value","data","v","r","s"`
+  * msgHash
+    * description: sha3 hash of RLP encoded Array containing the first 6 elements of rawData
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+  * DER
+    * description: DER encoded signature
+    * type: Array of Number
+    * format: each Number is an Integer in the range [0..255] and represents a single Byte
+  * signature
+    * Buffer
+    * length: 64 Bytes
+    * contents: rawData.r (32 Bytes) + rawData.s (32 Bytes)
+  * rawTx
+    * description: RLP encoded rawData
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+
+__Example:__
 
 ```javascript
 const {sign} = require('@warren-bank/ethereumjs-tx-sign')
-
-const Web3 = require('web3')
-const web3 = new Web3()
-web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
-
-const privateKey = 'e922354a3e5902b5ac474f3ff08a79cff43533826b8f451ae2190b65a9d26158'
 
 const txData = {
   nonce:    '0x00',
@@ -42,39 +73,142 @@ const txData = {
   data:     '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
 }
 
+const privateKey = 'e922354a3e5902b5ac474f3ff08a79cff43533826b8f451ae2190b65a9d26158'
+
 const {rawTx} = sign(txData, privateKey)
-console.log('raw_tx:', rawTx, "\n")
+
+const Web3 = require('web3')
+const web3 = new Web3()
+web3.setProvider(new web3.providers.HttpProvider('http://localhost:8545'))
 
 web3.eth.sendRawTransaction(rawTx, function(err, hash) {
-  if (err) console.log('error:', err.message)
-  if ((!err) && hash) {
-    console.log('tx_hash:', hash, "\n")
-
-    web3.eth.getTransaction(hash, (err, tx_data) => {
-      if (err) console.log('error:', err.message)
-      if ((!err) && tx_data) {
-        console.log('tx_data:', tx_data, "\n")
-      }
-    })
-
-    web3.eth.getTransactionReceipt(hash, (err, tx_receipt) => {
-      if (err) console.log('error:', err.message)
-      if ((!err) && tx_receipt) {
-        console.log('tx_receipt:', tx_receipt, "\n")
-
-        let contract_address = tx_receipt.contractAddress
-        if (contract_address) {
-          web3.eth.getCode(contract_address, (err, deployed_contract_code) => {
-            console.log('deployed_contract_code:', deployed_contract_code, "\n")
-          })
-        }
-      }
-    })
-  }
+  if (err)
+    console.log('error:', err.message)
+  if ((!err) && hash)
+    console.log('transaction hash:', hash)
 })
 ```
 
-#### Credits (and Copyright) Belong To:
+__More Complete Example:__
+
+* [script](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/01_compare_output/js/compare_output.js)
+* [output](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/01_compare_output/run.log)
+
+__verify(msgHash, signature, publicKey)__
+
+* params:
+  * msgHash
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+  * signature
+    * type:
+      * Buffer: length of 64 Bytes
+      * Object: `{s, r}`
+        * s: Buffer w/ length of 32 Bytes
+        * r: Buffer w/ length of 32 Bytes
+      * (DER encoded) Array of Number
+      * (DER encoded) String: hex-encoded (without '0x' prefix):<br>
+        `let DER_string = require('elliptic').utils.encode(DER, 'hex')`
+  * publicKey
+    * type: String
+    * format: hex-encoded (with or without '0x' prefix)
+* returns:
+  * Boolean
+    * indicates whether the `signature` can be verified for the `msgHash` using the `publicKey`
+      * `true` indicates that the `signature` was originally created using the (unavailable) `privateKey` that is paired to the (available) `publicKey`
+      * `false` indicates that it was not
+
+__Example:__
+
+```javascript
+// contintuation of the previous example:
+
+const {verify} = require('@warren-bank/ethereumjs-tx-sign')
+
+{
+  let {msgHash, signature} = sign(txData, privateKey)
+
+  let publicKey = '0493ff3bd23838a02f24adcb23aa90bf2de8becbd1abe688e0f6a3202bee2cc4c2ecf7cd2608cda0817d6223f81bed074f166b8b55de54d603817699b4c70feaac'
+
+  let result = verify(msgHash, signature, publicKey)
+}
+```
+
+__More Complete Example:__
+
+* [script](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/02_deploy_and_validate/js/deploy_and_validate.js)
+* [output](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/02_deploy_and_validate/run.log)
+
+__{txData, signature, msgHash, publicKey, address} = unsign(rawTx, to_hex, add_prefix)__
+
+* params:
+  * rawTx
+    * type:
+      * String: hex-encoded (with or without '0x' prefix)
+      * Buffer
+  * to_hex
+    * description: convert values in `txData` from Buffer to hex-encoded String?
+    * type: Boolean
+    * default: true
+  * add_prefix
+    * description: if `to_hex`, prepend '0x' prefix to hex-encoded String values?
+    * type: Boolean
+    * default: true
+* returns:
+  * txData
+    * type: Object
+    * keys: `"nonce","gasPrice","gasLimit","to","value","data"`
+    * values:
+      * type:
+        * if `to_hex`: hex-encoded String
+          * if `add_prefix`: with '0x' prefix
+          * else: without prefix
+        * else: Buffer
+  * signature
+    * type: Object
+    * keys: `"s","r"`
+    * values:
+      * type:
+        * if `to_hex`: hex-encoded String (without prefix)
+        * else: Buffer w/ length of 32 Bytes
+  * msgHash
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+  * publicKey
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+  * address
+    * description: "from" address, seen by network as the sender of this signed transaction
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+
+__Example:__
+
+```javascript
+// contintuation of the previous example:
+
+const {unsign} = require('@warren-bank/ethereumjs-tx-sign')
+
+{
+  let {txData, msgHash, signature, publicKey} = unsign(rawTx)
+
+  let result = verify(msgHash, signature, publicKey)
+}
+```
+
+__More Complete Example:__
+
+* [script](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/03_unsign_raw_tx/js/unsign_raw_tx.js)
+* [output](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/03_unsign_raw_tx/run.log)
+
+__Related:__
+
+* [ethereumjs-tx-unsign](https://github.com/warren-bank/ethereumjs-tx-unsign)
+  * exports a variation of the function: `unsign()`
+  * it is a minimal library to retrieve `txData` and (optionally) `signature` from `rawTx`
+  * it doesn't include any external dependencies and (consequently) lacks the ability to calculate `publicKey` and `address` from `signature`
+
+#### Credits (mostly) Belong To:
 
 * [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
 * [ethereumjs-util](https://github.com/ethereumjs/ethereumjs-util)
