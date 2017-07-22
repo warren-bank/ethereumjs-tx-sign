@@ -1,0 +1,7 @@
+{ generated: 
+   { privateKey: '1fcb563d02cf56a46709b8b430b8a2705cbe71066a127c34a7ce75214aaeadf0',
+     publicKey: '04c4eca6b1dd667f2d6841fc4cc1992000bb5dbabcae794751be746f078ce2d65bb8a81ef1e51f167873f8e25a50efbb45c847b62fb746e7b45d58e36be255c177',
+     address: '4a0f643bb2ecfd694d78abe6f963fcb59e0f12d8' },
+  derived: 
+   { publicKey: '04c4eca6b1dd667f2d6841fc4cc1992000bb5dbabcae794751be746f078ce2d65bb8a81ef1e51f167873f8e25a50efbb45c847b62fb746e7b45d58e36be255c177',
+     address: '4a0f643bb2ecfd694d78abe6f963fcb59e0f12d8' } }
