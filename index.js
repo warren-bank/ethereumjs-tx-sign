@@ -12,6 +12,8 @@ const rlp = require('./lib/rlp')  // {encode, isHexPrefixed, stripHexPrefix, str
 
 const {sha3} = require('./lib/keccak')
 
+const {publicToAddress} = require('./lib/keypairs')
+
 const assert = require('assert')
 
 // ----------------------------------------------------------------------
@@ -161,18 +163,6 @@ const format_raw_signature = function(sig) {
   data.r = sig.signature.slice(0, 32)
   data.s = sig.signature.slice(32, 64)
   return data
-}
-
-// ===============================
-// ethereumjs-util.publicToAddress
-// ===============================
-const publicToAddress = function(publicKey) {
-  let pubKey = rlp.toBuffer('0x' + rlp.stripHexPrefix(publicKey))
-  if (pubKey.length === 65) pubKey = pubKey.slice(1)
-  assert.strictEqual(pubKey.length, 64, `Length of public key is ${pubKey.length} bytes. Expected length is 64 bytes.`)
-
-  // address contains the lower 160bits of the hash => 20 bytes => 40 hex-encoded string characters
-  return sha3(pubKey).slice(-40)
 }
 
 // ===
