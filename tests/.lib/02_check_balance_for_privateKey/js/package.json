@@ -1,0 +1,8 @@
+{
+  "name": "02_check_balance_for_privateKey",
+  "version": "1.0.0",
+  "main": "",
+  "dependencies": {
+    "web3": "^0.20.1"
+  }
+}
