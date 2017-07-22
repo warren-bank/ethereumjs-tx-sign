@@ -211,6 +211,108 @@ __Related:__
 
 - - - -
 
+#### Bonus (Internal Library) APIs:
+
+__{privateKey, publicKey, address} = genKeyPair()__
+
+* returns:
+  * privateKey
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+  * publicKey
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+  * address
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+
+__Example:__
+
+```javascript
+const {genKeyPair} = require('@warren-bank/ethereumjs-tx-sign/lib/keypairs')
+
+const {privateKey, publicKey, address} = genKeyPair()
+
+console.log({privateKey, publicKey, address})
+```
+
+__Output:__
+
+```javascript
+{
+  privateKey: 'e922354a3e5902b5ac474f3ff08a79cff43533826b8f451ae2190b65a9d26158',
+  publicKey:  '0493ff3bd23838a02f24adcb23aa90bf2de8becbd1abe688e0f6a3202bee2cc4c2ecf7cd2608cda0817d6223f81bed074f166b8b55de54d603817699b4c70feaac',
+  address:    'f95abdf6ede4c3703e0e9453771fbee8592d31e9'
+}
+```
+
+__More Complete Example:__
+
+* [script](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/.lib/01_keypairs/js/keypairs.js)
+* [output](https://github.com/warren-bank/ethereumjs-tx-sign/blob/master/tests/.lib/01_keypairs/run.log)
+
+- - - -
+
+__publicKey = privateToPublic(privateKey, compressed)__
+
+* params:
+  * privateKey
+    * type:
+      * String: hex-encoded (with or without '0x' prefix)
+      * Buffer
+  * compressed
+    * [description](https://github.com/ethereumj/ethereumj/blob/a0a8a94aaf16a8a75af171c6c51d958b11922669/ethereumj-core/src/main/java/org/ethereum/crypto/ECKey.java#L58)
+    * type: Boolean
+    * default: false
+* returns:
+  * publicKey
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+
+__Example:__
+
+```javascript
+// continuation of the previous example:
+
+const {privateToPublic} = require('@warren-bank/ethereumjs-tx-sign/lib/keypairs')
+
+{
+  let pubKey = privateToPublic(privateKey)
+
+  assert(pubKey === publicKey)
+}
+```
+
+- - - -
+
+__address = publicToAddress(publicKey)__
+
+* params:
+  * publicKey
+    * type:
+      * String: hex-encoded (with or without '0x' prefix)
+      * Buffer
+* returns:
+  * address
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+
+__Example:__
+
+```javascript
+// continuation of the previous example:
+
+const {publicToAddress} = require('@warren-bank/ethereumjs-tx-sign/lib/keypairs')
+
+{
+  let addr = publicToAddress(publicKey)
+
+  assert(addr === address)
+}
+```
+
+- - - -
+
 #### Credits (mostly) Belong To:
 
 * [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
