@@ -37,7 +37,7 @@ __{rawData, msgHash, DER, signature, rawTx} = sign(txData, privateKey)__
     * values:
       * type: String
       * format: hex-encoded (with '0x' prefix)
-      * more generally: any value that can be converted to a Buffer: `rlp.toBuffer(value)`
+      * more generally: any value that can be converted to a Buffer: [`rlp.toBuffer(value)`](https://github.com/warren-bank/ethereumjs-tx-sign/blob/98cbea6912a59dcfa006196eb5b14814ca2a7b35/lib/rlp.js#L90)
   * privateKey
     * type: String
     * format: hex-encoded (with or without '0x' prefix)
