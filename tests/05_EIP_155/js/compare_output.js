@@ -69,8 +69,11 @@ signed tx: f86c098504a817c800825208943535353535353535353535353535353535353535880
 */
 // ----------------------------------------------------------------------
 
+const {sign} = require('../../../index')
+const BN = require('bn.js')
+
 const clean_input = function(str) {
-  if ((typeof str === 'number') || (str.isBigNumber === true)) str = `${ str.toString(16) }`
+  if ((typeof str === 'number') || (str.isBigNumber === true) || BN.isBN(str)) str = `${ str.toString(16) }`
   if ((!str) || (typeof str !== 'string') || (str === '0x')) str = '00'
   if (str.indexOf('0x') === 0) str = str.substr(2)
   if (str.length % 2 === 1) str = `0${str}`
@@ -79,10 +82,10 @@ const clean_input = function(str) {
 
 const txData = {
   nonce:    clean_input(9),
-  gasPrice: clean_input(20000000000),
+  gasPrice: clean_input(new BN('20000000000', 10)),
   gasLimit: clean_input(21000),
   to:       clean_input('0x3535353535353535353535353535353535353535'),
-  value:    clean_input(1000000000000000000),
+  value:    clean_input(new BN('1000000000000000000', 10)),
   data:     null,
   chainId:  1
 }
@@ -90,9 +93,6 @@ const txData = {
 const privateKey = '4646464646464646464646464646464646464646464646464646464646464646'
 
 // ----------------------------------------------------------------------
-
-const {sign} = require('../../../index')
-const BN = require('bn.js')
 
 {
   let {rawData, msgHash, rawTx} = sign(txData, privateKey)

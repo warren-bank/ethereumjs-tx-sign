@@ -42,8 +42,10 @@ const contract_data = Storage.new.getData(...contract_constructor_params)
 
 // ----------------------------------------------------------------------
 
+const BN = require('bn.js')
+
 const clean_input = function(str) {
-  if ((typeof str === 'number') || (str.isBigNumber === true)) str = `${ str.toString(16) }`
+  if ((typeof str === 'number') || (str.isBigNumber === true) || BN.isBN(str)) str = `${ str.toString(16) }`
   if ((!str) || (typeof str !== 'string') || (str === '0x')) str = '00'
   if (str.indexOf('0x') === 0) str = str.substr(2)
   if (str.length % 2 === 1) str = `0${str}`
