@@ -33,11 +33,20 @@ __{rawData, msgHash, DER, signature, rawTx} = sign(txData, privateKey)__
 * params:
   * txData
     * type: Object
-    * keys can include: `"nonce","gasPrice","gasLimit","to","value","data"`
+    * keys can include: `"nonce","gasPrice","gasLimit","to","value","data","chainId"`
     * values:
       * type: String
       * format: hex-encoded (with '0x' prefix)
       * more generally: any value that can be converted to a Buffer: [`rlp.toBuffer(value)`](https://github.com/warren-bank/ethereumjs-tx-sign/blob/98cbea6912a59dcfa006196eb5b14814ca2a7b35/lib/rlp.js#L90)
+      * exceptions:
+        * "chainId":
+          * type: native `Number`
+          * notes:
+            * [EIP 155](https://github.com/ethereum/eips/issues/155)
+            * value is used to modify `msgHash`
+            * value is stored in `rawData` in the field corresponding to "v"<br>
+              (ie: the `signature recovery` shares its field with the `chainId`); consequently,<br>
+              value is stored in `rawTx`
   * privateKey
     * type: String
     * format: hex-encoded (with or without '0x' prefix)
@@ -48,6 +57,10 @@ __{rawData, msgHash, DER, signature, rawTx} = sign(txData, privateKey)__
     * values (and order) correspond to the data fields: `"nonce","gasPrice","gasLimit","to","value","data","v","r","s"`
   * msgHash
     * description: sha3 hash of RLP encoded Array containing the first 6 elements of rawData
+      * note:
+        * if `chainId > 0`: Array is extended to 9 elements
+          * 7th: Buffer containing `chainId`
+          * 8th and 9th: zero-length Buffers
     * type: String
     * format: hex-encoded (without '0x' prefix)
   * DER
@@ -74,7 +87,8 @@ const txData = {
   gasLimit: '0x2710',
 //to:       '0x00',
   value:    '0x00',
-  data:     '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
+  data:     '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+  chainId:  1
 }
 
 const privateKey = 'e922354a3e5902b5ac474f3ff08a79cff43533826b8f451ae2190b65a9d26158'
@@ -147,25 +161,23 @@ __More Complete Example:__
 
 - - - -
 
-__{txData, signature, msgHash, publicKey, address} = unsign(rawTx, add_prefix)__
+__{txData, signature, msgHash, publicKey, address} = unsign(rawTx)__
 
 * params:
   * rawTx
     * type:
       * String: hex-encoded (with or without '0x' prefix)
       * Buffer
-  * add_prefix
-    * description: prepend '0x' prefix to hex-encoded String values in `txData`?
-    * type: Boolean
-    * default: true
 * returns:
   * txData
     * type: Object
-    * keys: `"nonce","gasPrice","gasLimit","to","value","data"`
+    * keys: `"nonce","gasPrice","gasLimit","to","value","data","chainId"`
     * values:
       * type: String
-      * format: hex-encoded
-        * if `add_prefix`: with '0x' prefix
+      * format: hex-encoded (with '0x' prefix)
+      * exceptions:
+        * "chainId":
+          * type: native `Number`
   * signature
     * type: Object
     * keys: `"r","s"`

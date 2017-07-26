@@ -3,19 +3,9 @@
 // ----------------------------------------------------------------------
 /*
 
-const EC  = require('elliptic').ec
-const ethUtil = require('ethereumjs-util')
-
-const ec  = new EC('secp256k1')
-const key = ec.genKeyPair()
-
-const privateKey = key.getPrivate('hex')
-const publicKey  = key.getPublic().encode('hex')
-const address    = ethUtil.publicToAddress(Buffer.from(publicKey, 'hex'), true).toString('hex')
-
-console.log('privateKey:', privateKey)
-console.log('publicKey:',  publicKey)
-console.log('address:',    address)
+const {genKeyPair} = require('../../../lib/keypairs')
+const {privateKey, publicKey, address} = genKeyPair()
+console.log({privateKey, publicKey, address})
 
 */
 // ----------------------------------------------------------------------
@@ -49,41 +39,54 @@ const txData = {
 
 const {sign, verify} = require('../../../index')
 
-const {rawData: this_rawData, msgHash: this_msgHash, DER: this_DER, signature: this_signature, rawTx: this_rawTx} = sign(txData, privateKey)
+const test_this_library = function(chainId) {
+  let test_txData = Object.assign({}, txData, {chainId})
+  let {rawData: this_rawData, msgHash: this_msgHash, DER: this_DER, signature: this_signature, rawTx: this_rawTx} = sign(test_txData, privateKey)
 
-console.log('this library:')
-console.log('   ', 'chainId                   =', '[unavailable]')
-console.log('   ', 'rawData                   =', JSON.stringify(this_rawData))
-console.log('   ', 'msgHash                   =', this_msgHash.toString('hex'))
-console.log('   ', 'signature                 =', this_signature.toString('hex'))
-console.log('   ', 'verification of signature =', verify(this_msgHash, this_signature, publicKey) ? 'pass' : 'fail')
-console.log('   ', 'DER encoded signature     =', JSON.stringify(this_DER))
-console.log('   ', 'verification of DER       =', verify(this_msgHash, this_DER,       publicKey) ? 'pass' : 'fail')
-console.log('   ', 'signed rawTx              =', clean_input(this_rawTx))
-console.log('')
+  console.log('this library:')
+  console.log('   ', 'chainId                   =', chainId)
+  console.log('   ', 'rawData                   =', JSON.stringify(this_rawData))
+  console.log('   ', 'msgHash                   =', this_msgHash.toString('hex'))
+  console.log('   ', 'signature                 =', this_signature.toString('hex'))
+  console.log('   ', 'verification of signature =', verify(this_msgHash, this_signature, publicKey) ? 'pass' : 'fail')
+  console.log('   ', 'DER encoded signature     =', JSON.stringify(this_DER))
+  console.log('   ', 'verification of DER       =', verify(this_msgHash, this_DER,       publicKey) ? 'pass' : 'fail')
+  console.log('   ', 'signed rawTx              =', clean_input(this_rawTx))
+  console.log('')
+}
 
 // ----------------------------------------------------------------------
 
 const Tx = require('ethereumjs-tx');
 const privateKeyBuffer = new Buffer(privateKey, 'hex')
 
-const tx = new Tx(txData)
-tx.sign(privateKeyBuffer)
+const test_that_library = function(chainId) {
+  let test_txData = Object.assign({}, txData, {chainId})
+  let tx = new Tx(test_txData)
+  tx.sign(privateKeyBuffer)
 
-const that_rawData   = tx.raw
-const that_msgHash   = tx.hash(false)
-const that_signature = Buffer.concat([tx.r, tx.s], 64)
-const that_rawTx     = clean_input( tx.serialize().toString('hex') )
+  let that_rawData   = tx.raw.slice()
+  let that_msgHash   = tx.hash(false)
+  let that_signature = Buffer.concat([tx.r, tx.s], 64)
+  let that_rawTx     = clean_input( tx.serialize().toString('hex') )
 
-console.log('that library:')
-console.log('   ', 'chainId                   =', tx._chainId)
-console.log('   ', 'rawData                   =', JSON.stringify(that_rawData))
-console.log('   ', 'msgHash                   =', that_msgHash.toString('hex'))
-console.log('   ', 'signature                 =', that_signature.toString('hex'))
-console.log('   ', 'verification of signature =', verify(that_msgHash, that_signature, publicKey) ? 'pass' : 'fail')
-console.log('   ', 'DER encoded signature     =', '[unavailable]')
-console.log('   ', 'verification of DER       =', '[unavailable]')
-console.log('   ', 'signed rawTx              =', that_rawTx)
-console.log('')
+  console.log('that library:')
+  console.log('   ', 'chainId                   =', tx._chainId)
+  console.log('   ', 'rawData                   =', JSON.stringify(that_rawData))
+  console.log('   ', 'msgHash                   =', that_msgHash.toString('hex'))
+  console.log('   ', 'signature                 =', that_signature.toString('hex'))
+  console.log('   ', 'verification of signature =', verify(that_msgHash, that_signature, publicKey) ? 'pass' : 'fail')
+  console.log('   ', 'DER encoded signature     =', '[unavailable]')
+  console.log('   ', 'verification of DER       =', '[unavailable]')
+  console.log('   ', 'signed rawTx              =', that_rawTx)
+  console.log('')
+}
+
+// ----------------------------------------------------------------------
+
+for (let chainId=0; chainId<4; chainId++) {
+  test_this_library(chainId)
+  test_that_library(chainId)
+}
 
 // ----------------------------------------------------------------------

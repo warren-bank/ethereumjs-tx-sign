@@ -23,7 +23,8 @@ const data = {}
     gasLimit: '0x2710',
 //  to:       '0x00',
     value:    '0x00',
-    data:     '0x7f7465737432000000000000000000000000000000000000000000000000000000600057'
+    data:     '0x7f7465737432000000000000000000000000000000000000000000000000000000600057',
+    chainId:  1
   }
 
   let {rawTx} = sign(txData, data.sign.keypairs.privateKey)
@@ -51,7 +52,7 @@ const data = {}
   Object.assign(data.unsign.keypairs, {publicKey, address})
 
   data.unsign.verify = {
-    recovery_publicKey: (verify(msgHash, signature, publicKey) ? 'pass' : 'fail'),
+    recovery_publicKey: (verify(msgHash, signature, publicKey)                    ? 'pass' : 'fail'),
     original_publicKey: (verify(msgHash, signature, data.sign.keypairs.publicKey) ? 'pass' : 'fail')
   }
 }

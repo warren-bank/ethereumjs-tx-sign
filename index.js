@@ -114,10 +114,12 @@ const get_field_value = function(field, value) {
 // ==================
 // ethereumjs-tx.sign
 // ==================
-const get_signature = function(rawData, privateKey) {
-  let msgHash    = get_hash(rawData)
+const get_signature = function(rawData, chainId, privateKey) {
+  let msgHash    = get_hash(rawData, chainId)
   let {DER, sig} = get_raw_signature(msgHash, privateKey)
   let rawSigData = format_raw_signature(sig)
+  if (chainId)
+    rawSigData.v += (chainId * 2) + 8
   rawSigData     = process_data(rawSigData, false)
   rawSigData.forEach((value, index) => {
     if (value !== undefined) rawData[index] = value
@@ -129,8 +131,16 @@ const get_signature = function(rawData, privateKey) {
 // ==================
 // ethereumjs-tx.hash
 // ==================
-const get_hash = function(rawData) {
-  let items   = rawData.slice(0, 6)  // "nonce","gasPrice","gasLimit","to","value","data"
+const get_hash = function(rawData, chainId) {
+  let items = rawData.slice(0, 6)  // "nonce","gasPrice","gasLimit","to","value","data"
+  if (chainId) {
+    let rawSigData = {v: chainId, r: null, s: null}
+    rawSigData     = process_data(rawSigData, false)
+    rawSigData.forEach((value, index) => {
+      if (value !== undefined) items[index] = value
+    })
+  }
+
   let msgHash = sha3(rlp.encode(items))
   return rlp.stripHexPrefix(msgHash)
 }
@@ -171,7 +181,7 @@ const format_raw_signature = function(sig) {
 const sign = function(data, privateKey) {
   privateKey                    = rlp.toBuffer('0x' + rlp.stripHexPrefix(privateKey))
   let rawData                   = process_data(data)
-  let {msgHash, DER, signature} = get_signature(rawData, privateKey)
+  let {msgHash, DER, signature} = get_signature(rawData, data.chainId, privateKey)
   let rawTx                     = rlp.encode(rawData).toString('hex')
   return {rawData, msgHash, DER, signature, rawTx}
 }
@@ -197,11 +207,11 @@ const verify = function(msgHash, signature, publicKey) {
   return ec.verify(msgHash, signature, publicKey)
 }
 
-const unsign = function(rawTx, add_prefix=true) {
-  let {txData, signature} = unsignRawTx(rawTx, true, add_prefix, true, false)
+const unsign = function(rawTx) {
+  let {txData, signature} = unsignRawTx(rawTx, true, true, false)
 
   let rawData = process_data(txData)
-  let msgHash = get_hash(rawData)
+  let msgHash = get_hash(rawData, txData.chainId)
 
   let ec_msgHash = new BN(msgHash, 16)
   let ec_signature = {
@@ -209,6 +219,8 @@ const unsign = function(rawTx, add_prefix=true) {
     s: signature.s
   }
   let ec_recovery = parseInt(signature.v, 16) - 27
+  if (txData.chainId)
+    ec_recovery -= (txData.chainId * 2) + 8
 
   let publicKey = ec.recoverPubKey(ec_msgHash, ec_signature, ec_recovery).encode('hex')
   let address = publicToAddress(publicKey)
