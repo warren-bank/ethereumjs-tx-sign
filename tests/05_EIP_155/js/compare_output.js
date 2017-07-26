@@ -45,7 +45,7 @@ signed tx: f86c098504a817c800825208943535353535353535353535353535353535353535880
 result (alt methodology):
 =========================
 
-* when "r" and "s" are 1B Buffers containing the value `0`,
+* when "r" and "s" are 1-byte Buffers containing the value `0x00`,
     > `let rawSigData = {v: chainId, r: 0, s: 0}`
   the output matches:
     - none of the values computed by "vbuterin"
