@@ -325,6 +325,32 @@ const {publicToAddress} = require('@warren-bank/ethereumjs-tx-sign/lib/keypairs'
 
 - - - -
 
+__hash = sha3(value, bits)__
+
+* params:
+  * value
+    * any value that can be converted to a Buffer: [`rlp.toBuffer(value)`](https://github.com/warren-bank/ethereumjs-tx-sign/blob/98cbea6912a59dcfa006196eb5b14814ca2a7b35/lib/rlp.js#L90)
+  * bits
+    * type: Number
+    * supported values include: `224, 256, 384, 512`
+    * default: 256
+* returns:
+  * hash
+    * type: String
+    * format: hex-encoded (without '0x' prefix)
+
+__Example:__
+
+```javascript
+const {sha3} = require('@warren-bank/ethereumjs-tx-sign/lib/keccak')
+
+{
+  let hash = sha3('hello world')
+}
+```
+
+- - - -
+
 #### Credits (mostly) Belong To:
 
 * [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)
