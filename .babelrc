@@ -1,0 +1,6 @@
+{
+  "presets": [
+    "./browser-build/node_modules/babel-preset-env",
+    "./browser-build/node_modules/babel-preset-stage-0"
+  ]
+}

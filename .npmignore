@@ -1,2 +1,7 @@
 node_modules/
+browser-build/
+!browser-build/dist/
 tests/
+
+.babelrc
+notes.txt

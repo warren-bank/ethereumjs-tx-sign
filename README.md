@@ -351,6 +351,32 @@ const {sha3} = require('@warren-bank/ethereumjs-tx-sign/lib/keccak')
 
 - - - -
 
+#### Browser Bundle:
+
+```text
+<script src="./browser-build/dist/js/bundle.js"></script>
+<script>
+{
+  let Buffer = window.Buffer
+
+  let {sign, verify, unsign} = window.ethereumjs_tx_sign
+
+  let {privateToPublic, publicToAddress, genKeyPair} = window.ethereumjs_tx_sign.keypairs
+
+  let {encode, isHexPrefixed, stripHexPrefix, stripZeros, intToHex, padToEven, intToBuffer, toBuffer, bufferToHex, bufferToInt} = window.ethereumjs_tx_sign.rlp
+
+  let {createKeccakHash, sha3} = window.ethereumjs_tx_sign.keccak
+}
+</script>
+```
+
+#### Hosted Tests:
+
+* [examples in README](https://rawgit.com/warren-bank/ethereumjs-tx-sign/master/browser-build/tests/04_README_examples/index.html)
+* [keypairs](https://rawgit.com/warren-bank/ethereumjs-tx-sign/master/browser-build/tests/.lib/01_keypairs/index.html)
+
+- - - -
+
 #### Credits (mostly) Belong To:
 
 * [ethereumjs-tx](https://github.com/ethereumjs/ethereumjs-tx)

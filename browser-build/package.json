@@ -1,0 +1,32 @@
+{
+  "name": "@warren-bank/do-not-publish",
+  "private": true,
+  "version": "1.0.0",
+  "description": "",
+  "main": "",
+  "scripts": {
+    "build": "webpack"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-0": "^6.24.1",
+    "webpack": "^3.10.0"
+  },
+  "author": {
+    "name": "Warren R. Bank",
+    "email": "warren.r.bank@gmail.com",
+    "url": "https://github.com/warren-bank"
+  },
+  "license": "GPL-2.0",
+  "homepage": "https://github.com/warren-bank/ethereumjs-tx-sign",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/warren-bank/ethereumjs-tx-sign"
+  },
+  "bugs": {
+    "url": "https://github.com/warren-bank/ethereumjs-tx-sign/issues"
+  }
+}

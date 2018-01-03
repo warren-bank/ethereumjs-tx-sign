@@ -1,7 +1,8 @@
 {
   "name": "@warren-bank/ethereumjs-tx-sign",
-  "version": "2.0.0",
-  "main": "index.js",
+  "version": "2.1.0",
+  "main": "./index.js",
+  "browser": "./browser-build/dist/js/bundle.js",
   "dependencies": {
     "@warren-bank/ethereumjs-tx-unsign": "^2.0.0",
     "bn.js": "^4.11.7",
