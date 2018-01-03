@@ -359,6 +359,8 @@ const {sha3} = require('@warren-bank/ethereumjs-tx-sign/lib/keccak')
 {
   let Buffer = window.Buffer
 
+  let BN = window.BN
+
   let {sign, verify, unsign} = window.ethereumjs_tx_sign
 
   let {privateToPublic, publicToAddress, genKeyPair} = window.ethereumjs_tx_sign.keypairs

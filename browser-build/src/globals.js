@@ -1,5 +1,7 @@
 const {Buffer} = require('buffer')
 
+const BN = require('bn.js')
+
 const {sign, verify, unsign} = require('../../index')
 const {privateToPublic, publicToAddress, genKeyPair} = require('../../lib/keypairs')
 const {encode, isHexPrefixed, stripHexPrefix, stripZeros, intToHex, padToEven, intToBuffer, toBuffer, bufferToHex, bufferToInt} = require('../../lib/rlp')
@@ -15,5 +17,7 @@ const ethereumjs_tx_sign = {
 }
 
 window.Buffer = Buffer
+
+window.BN = BN
 
 window.ethereumjs_tx_sign = ethereumjs_tx_sign
